@@ -1,12 +1,11 @@
 # vision-zero
 Tracking and visualizing traffic crashes in greater Tallahassee.
 
-## Currently: Building Thomasville Road Demo
+## Project Status
 - [x] Invite the public to join this effort
-- [ ] Schedule interest meeting
-- [ ] Create groups
-- [ ] Plan demo development
-- [ ] Build demo
+- [X] Schedule interest meeting
+- [x] Meet to discuss direction (summary here)
+- [ ] Build simple, interactive map of 2018-2021 crashes, color-coded for crash type (Milestone 1)
 
 ## Resources
 
