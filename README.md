@@ -1,11 +1,10 @@
-# vision-zero
-Tracking and visualizing traffic crashes in greater Tallahassee.
+### Project Status: 
+- Currently cleaning data and visualizing a sample dataset
 
-## Project Status
-- [x] Invite the public to join this effort
-- [X] Schedule interest meeting
-- [x] Meet to discuss direction (summary here)
-- [ ] Build simple, interactive map of 2018-2021 crashes, color-coded for crash type (Milestone 1)
+### What questions can we answer with this data?:
+- Where are the most dangerous intersections?
+- What is the most dangerous time to travel on Thomasville Rd?
+- Does daylight savings impact crash frequency?
 
 ## Resources
 
