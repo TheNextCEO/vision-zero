@@ -29,7 +29,7 @@ const map = new mapboxgl.Map({
 map.on('load', function () {
   map.addSource('points', {
     type: 'geojson',
-    data: 'https://raw.githubusercontent.com/Open-Data-Tallahassee/vision-zero/main/crash-data/clean/all-2018to2021.geojson',
+    data: 'https://raw.githubusercontent.com/Open-Data-Tallahassee/vision-zero/main/crash-data/quarterly-tranches/leon-events-2019-q2.geojson',
     generateId: true
   });
   map.addLayer(
