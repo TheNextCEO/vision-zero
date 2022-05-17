@@ -1,5 +1,3 @@
-<div id="map"></div>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,7 +22,8 @@ const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/light-v10',
   zoom: 12,
-  center: [-84.28054689999016, 30.444679757470055]
+  center: [-84.28054689999016, 30.444679757470055],
+  interactive: true
 });
 
 map.on('load', function () {
