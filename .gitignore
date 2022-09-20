@@ -8,3 +8,4 @@ map/package-lock.json
 map/.cache
 map/public
 data/raw/*
+.DS_Store
