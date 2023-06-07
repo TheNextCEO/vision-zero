@@ -9,3 +9,5 @@ map/.cache
 map/public
 data/raw/*
 .DS_Store
+node_modules
+node_modules
