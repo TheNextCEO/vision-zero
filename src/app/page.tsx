@@ -7,9 +7,7 @@ export default function Home() {
     <div className="flex flex-col w-screen min-h-screen ">
       <Header />
       <Navbar />
-      <div className="flex flex-col px-7">
-        <CrashMap />
-      </div>
+      <CrashMap />
     </div>
   );
 }

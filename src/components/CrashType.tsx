@@ -3,46 +3,46 @@ interface CrashTypeProps {
   handleOptionClick: (option: string) => void;
 }
 
-const CrashType = (props: CrashTypeProps) => {
+const CrashType = ({ selectedOption, handleOptionClick }: any) => {
   return (
     <div className="flex flex-wrap">
       <button
         className={`flex-grow px-4 py-2 border rounded-l ${
-          props.selectedOption === "CAR"
+          selectedOption === "CAR"
             ? "bg-blue-500 text-white focus:shadow-blue-900"
             : "bg-white hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => props.handleOptionClick("CAR")}
+        onClick={() => handleOptionClick("CAR")}
       >
         CAR
       </button>
       <button
         className={`flex-grow px-4 py-2 border ${
-          props.selectedOption === "PEDESTRIANS"
+          selectedOption === "PEDESTRIAN"
             ? "bg-blue-500 text-white"
             : "bg-white hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => props.handleOptionClick("PEDESTRIANS")}
+        onClick={() => handleOptionClick("PEDESTRIAN")}
       >
         PEDESTRIANS
       </button>
       <button
         className={`flex-grow px-4 py-2 border ${
-          props.selectedOption === "BIKE"
+          selectedOption === "BICYCLIST"
             ? "bg-blue-500 text-white"
             : "bg-white hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => props.handleOptionClick("BIKE")}
+        onClick={() => handleOptionClick("BICYCLIST")}
       >
         BIKE
       </button>
       <button
         className={`flex-grow px-4 py-2 border rounded-r ${
-          props.selectedOption === "ALL"
+          selectedOption === "ALL"
             ? "bg-blue-500 text-white"
             : "bg-white hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => props.handleOptionClick("ALL")}
+        onClick={() => handleOptionClick("ALL")}
       >
         ALL
       </button>

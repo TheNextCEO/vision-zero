@@ -8,21 +8,21 @@ const CrashSeverity = (props: CrashTypeProps) => {
     <div className="flex flex-wrap">
       <button
         className={`flex-grow px-4 py-2 border rounded-l ${
-          props.selectedOption === "CRASHES"
+          props.selectedOption === "CRASH"
             ? "bg-blue-500 text-white"
             : "bg-white hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => props.handleOptionClick("CRASHES")}
+        onClick={() => props.handleOptionClick("CRASH")}
       >
         CRASHES
       </button>
       <button
         className={`flex-grow px-4 py-2 border rounded-r ${
-          props.selectedOption === "FATALITIES"
+          props.selectedOption === "FATAL"
             ? "bg-blue-500 text-white"
             : "bg-white hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => props.handleOptionClick("FATALITIES")}
+        onClick={() => props.handleOptionClick("FATAL")}
       >
         FATALITIES
       </button>
