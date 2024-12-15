@@ -5,33 +5,92 @@ interface CrashDateProps {
   handleFromDateChange: (date: Date) => void;
 }
 
-const CrashDate = (props: CrashDateProps) => {
-  console.log();
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Button } from "./ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
+const CrashDate = (props: CrashDateProps) => {
   return (
     <div className="flex flex-col">
-      <label htmlFor="from_date" className="font-bold mb-2">
+      <label htmlFor="from_date" className="font-bold mt-2">
         FROM DATE:
       </label>
-      <input
-        type="date"
-        value={props.toDate.toISOString().substr(0, 10)}
-        onChange={(event) =>
-          props.handleToDateChange(new Date(event.target.value))
-        }
-        className="border rounded px-2 py-2 mb-2"
-      />
-      <label htmlFor="to_date" className="font-bold mb-2">
-        TO DATE:
-      </label>
-      <input
+      {/* <input
         type="date"
         value={props.fromDate.toISOString().substr(0, 10)}
         onChange={(event) =>
           props.handleFromDateChange(new Date(event.target.value))
         }
         className="border rounded px-2 py-2"
-      />
+      /> */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant={"outline"}
+            className="w-[240px] pl-3 text-left font-normal"
+          >
+            {props.fromDate ? (
+              format(props.fromDate, "PPP")
+            ) : (
+              <span>Pick a date</span>
+            )}
+            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={props.fromDate}
+            onSelect={(day) => day && props.handleFromDateChange(day)}
+            disabled={(date) =>
+              date > new Date() || date < new Date("1900-01-01")
+            }
+            initialFocus
+            defaultMonth={props.fromDate}
+          />
+        </PopoverContent>
+      </Popover>
+
+      <label htmlFor="to_date" className="font-bold mt-2">
+        TO DATE:
+      </label>
+      {/* <input
+        type="date"
+        value={props.toDate.toISOString().substr(0, 10)}
+        onChange={(event) =>
+          props.handleToDateChange(new Date(event.target.value))
+        }
+        className="border rounded px-2 py-2 mb-2"
+      /> */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant={"outline"}
+            className="w-[240px] pl-3 text-left font-normal"
+          >
+            {props.toDate ? (
+              format(props.toDate, "PPP")
+            ) : (
+              <span>Pick a date</span>
+            )}
+            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={props.toDate}
+            onSelect={(day) => day && props.handleToDateChange(day)}
+            disabled={(date) =>
+              date > new Date() || date < new Date("1900-01-01")
+            }
+            initialFocus
+            defaultMonth={props.toDate}
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

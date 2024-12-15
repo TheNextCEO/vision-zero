@@ -3,49 +3,51 @@ interface CrashTypeProps {
   handleOptionClick: (option: string) => void;
 }
 
+import { Button } from "@/components/ui/button";
+
 const CrashType = ({ selectedOption, handleOptionClick }: any) => {
   return (
-    <div className="flex flex-wrap">
-      <button
-        className={`flex-grow px-4 py-2 border rounded-l ${
+    <div className="flex flex-wrap gap-1">
+      <Button
+        className={`flex-grow px-4 py-2 ${
           selectedOption === "CAR"
-            ? "bg-blue-500 text-white focus:shadow-blue-900"
-            : "bg-white hover:bg-blue-500 hover:text-white"
+            ? "bg-blue-500 text-white"
+            : "bg-white text-black hover:bg-blue-500 hover:text-white"
         }`}
         onClick={() => handleOptionClick("CAR")}
       >
         CAR
-      </button>
-      <button
-        className={`flex-grow px-4 py-2 border ${
+      </Button>
+      <Button
+        className={`flex-grow px-4 py-2 ${
           selectedOption === "PEDESTRIAN"
             ? "bg-blue-500 text-white"
-            : "bg-white hover:bg-blue-500 hover:text-white"
+            : "bg-white text-black hover:bg-blue-500 hover:text-white"
         }`}
         onClick={() => handleOptionClick("PEDESTRIAN")}
       >
         PEDESTRIANS
-      </button>
-      <button
-        className={`flex-grow px-4 py-2 border ${
+      </Button>
+      <Button
+        className={`flex-grow px-4 py-2 ${
           selectedOption === "BICYCLIST"
             ? "bg-blue-500 text-white"
-            : "bg-white hover:bg-blue-500 hover:text-white"
+            : "bg-white text-black hover:bg-blue-500 hover:text-white"
         }`}
         onClick={() => handleOptionClick("BICYCLIST")}
       >
         BIKE
-      </button>
-      <button
-        className={`flex-grow px-4 py-2 border rounded-r ${
+      </Button>
+      <Button
+        className={`flex-grow px-4 py-2 rounded-r ${
           selectedOption === "ALL"
             ? "bg-blue-500 text-white"
-            : "bg-white hover:bg-blue-500 hover:text-white"
+            : "bg-white text-black hover:bg-blue-500 hover:text-white"
         }`}
         onClick={() => handleOptionClick("ALL")}
       >
         ALL
-      </button>
+      </Button>
     </div>
   );
 };

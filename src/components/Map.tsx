@@ -1,26 +1,27 @@
-import mapboxgl from "!mapbox-gl";
+import mapboxgl from "mapbox-gl";
 import { select } from "d3";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useRef, useState } from "react";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_REACT_APP_MAPBOX_TOKEN;
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_REACT_APP_MAPBOX_TOKEN || "";
 
 const Map = ({ data, colorScale, colorValue }: any) => {
   const mapWidthOffset = 180;
   const mapContainer = useRef(null);
-  const map = useRef(null);
+  const map = useRef<mapboxgl.Map | null>(null);
   const [lng, setLng] = useState(-84.2875);
   const [lat, setLat] = useState(30.4543);
   const [zoom, setZoom] = useState(11.53);
 
-  const project = (d) => {
+  const project = (d: any) => {
+    if (!map.current) throw new Error("Map is not initialized");
     return map.current.project(new mapboxgl.LngLat(d.longitude, d.latitude));
   };
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
-      container: mapContainer.current,
+      container: mapContainer.current || "",
       style: "mapbox://styles/mapbox/streets-v9",
       center: [lng, lat],
       zoom: zoom,
@@ -30,9 +31,9 @@ const Map = ({ data, colorScale, colorValue }: any) => {
   useEffect(() => {
     if (!map.current) return; // wait for map to initialize
     map.current.on("move", () => {
-      setLng(map.current.getCenter().lng.toFixed(4));
-      setLat(map.current.getCenter().lat.toFixed(4));
-      setZoom(map.current.getZoom().toFixed(2));
+      setLng(parseFloat(map.current!.getCenter().lng.toFixed(4)));
+      setLat(parseFloat(map.current!.getCenter().lat.toFixed(4)));
+      setZoom(parseFloat(map.current!.getZoom().toFixed(2)));
     });
 
     if (!data) {
@@ -62,13 +63,17 @@ const Map = ({ data, colorScale, colorValue }: any) => {
         dots.attr("cx", (d) => project(d).x).attr("cy", (d) => project(d).y);
       };
 
-      map.current.on("viewreset", render);
-      map.current.on("move", render);
-      map.current.on("moveend", render);
+      if (map.current) {
+        map.current.on("viewreset", render);
+        map.current.on("move", render);
+        map.current.on("moveend", render);
+      }
       render();
 
       return () => {
-        map.current.remove();
+        if (map.current) {
+          map.current.remove();
+        }
       };
     });
   }, []);

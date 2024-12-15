@@ -1,6 +1,6 @@
 "use client";
 
-import { csv, scaleOrdinal, DSVParsedArray } from "d3";
+import { csv, scaleOrdinal } from "d3";
 import { useEffect, useState } from "react";
 import CrashDate from "./CrashDate";
 import CrashSeverity from "./CrashSeverity";
@@ -10,22 +10,22 @@ import Map from "./Map";
 const CrashMap = () => {
   const [typeOption, setTypeOption] = useState("ALL");
   const [severityOption, setSeverityOption] = useState("CRASH");
-  const [fromDate, setFromDate] = useState<Date>(new Date(2019, 3)); // June 1, 2019
-  const [toDate, setToDate] = useState<Date>(new Date(2019, 5));
+  const [fromDate, setFromDate] = useState<Date>(new Date());
+  const [toDate, setToDate] = useState<Date>(new Date());
   const [visibleData, setVisibleData] = useState<any>(null);
 
   const crashData = useLeonCountyCrashData();
 
   useEffect(() => {
     if (crashData) {
-      const severityData = filterDataBySeverity(
-        filterDataByType(crashData, typeOption),
-        severityOption
+      setVisibleData(
+        filterDataBySeverity(
+          filterDataByType(crashData, typeOption),
+          severityOption
+        )
       );
-
-      setVisibleData(filterDataByDate(severityData, fromDate, toDate));
     }
-  }, [crashData, typeOption, severityOption, fromDate, toDate]);
+  }, [crashData, typeOption, severityOption]);
 
   if (!crashData) {
     return <pre>Loading...</pre>;
@@ -47,7 +47,6 @@ const CrashMap = () => {
       "brown",
       "black",
     ]);
-
   return (
     <div className="flex flex-col md:flex-row ">
       <div className="col-lg-4 py-3 px-4">
@@ -68,7 +67,8 @@ const CrashMap = () => {
             handleFromDateChange={setFromDate}
           />
           <div className="italic">
-            Data updated as of: {new Date(2023, 5, 12).toLocaleDateString()}
+            Data updated as of the last day of:{" "}
+            {new Date().toLocaleDateString()}
           </div>
         </div>
       </div>
@@ -143,14 +143,10 @@ const useLeonCountyCrashData = () => {
     return d;
   };
 
-  const [data, setData] = useState<DSVParsedArray<any> | null>(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    csv(csvURL, row).then((parsedData) => {
-      // Slice the first 50 items
-      const limitedData = parsedData;
-      setData(limitedData);
-    });
+    csv(csvURL, row).then(setData);
   }, []);
 
   return data;
