@@ -6,12 +6,13 @@ import CrashDate from "./CrashDate";
 import CrashSeverity from "./CrashSeverity";
 import CrashType from "./CrashType";
 import Map from "./Map";
+import { startOfDay, endOfDay } from "date-fns";
 
 const CrashMap = () => {
   const [typeOption, setTypeOption] = useState("ALL");
   const [severityOption, setSeverityOption] = useState("CRASH");
   const [fromDate, setFromDate] = useState<Date>(new Date(2019, 3)); // June 1, 2019
-  const [toDate, setToDate] = useState<Date>(new Date(2019, 5));
+  const [toDate, setToDate] = useState<Date>(new Date(2019, 5, 30));
   const [visibleData, setVisibleData] = useState<any>(null);
 
   const crashData = useLeonCountyCrashData();
@@ -120,8 +121,12 @@ const filterDataByType = (data: any, typeOption: any) => {
 };
 
 const filterDataByDate = (data: any, fromDate: Date, toDate: Date) => {
+  const start = startOfDay(fromDate);
+  const end = endOfDay(toDate);
+
   return data.filter((d: any) => {
-    return d.crash_date_time >= fromDate && d.crash_date_time <= toDate;
+    const crashDate = new Date(d.crash_date_time);
+    return crashDate >= start && crashDate <= end;
   });
 };
 
