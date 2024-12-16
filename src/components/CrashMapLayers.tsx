@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  convertToGeoJSON,
+  CrashData,
+  GeoJSONFeatureCollection,
+} from "@/utils/csvToGeoJSON";
 import Papa from "papaparse";
-
+import { useEffect, useState } from "react";
+import CrashSeverity from "./CrashSeverity";
 import Map from "./MapLayers";
-import { convertToGeoJSON, CrashData } from "@/utils/csvToGeoJSON";
 
 const CrashMap = () => {
   const [visibleData, setVisibleData] = useState<any>(null);
+  const [crashSeverityOption, setCrashSeverityOption] = useState<
+    "ALL" | "FATAL" | "INJURY"
+  >("ALL");
 
   const crashData = getLeonCountyCrashData();
 
@@ -20,12 +27,61 @@ const CrashMap = () => {
     }
   }, [crashData]);
 
+  // Update the map source data based on the filter
+  useEffect(() => {
+    if (crashData) {
+      const geojson = convertToGeoJSON(crashData);
+      let filteredFeatures = geojson.features;
+
+      if (crashSeverityOption === "FATAL") {
+        filteredFeatures = geojson.features.filter(
+          (feature) => feature.properties.is_fatal
+        );
+      } else if (crashSeverityOption === "INJURY") {
+        filteredFeatures = geojson.features.filter(
+          (feature) => !feature.properties.is_fatal
+        );
+      }
+
+      const filteredGeoJSON: GeoJSONFeatureCollection = {
+        type: "FeatureCollection",
+        features: filteredFeatures,
+      };
+
+      setVisibleData(filteredGeoJSON);
+    }
+  }, [crashSeverityOption, crashData]);
+
   if (!crashData) {
     return <pre>Loading...</pre>;
   }
 
   return (
     <div className="flex flex-col md:flex-row ">
+      <div className="col-lg-4 py-3 px-4">
+        {/* <div className="text-xl font-bold py-3">FILTER CRASHES</div> */}
+        <div className="w-full space-y-3">
+          {/* <CrashType
+            selectedOption={crashTypeOption}
+            handleOptionClick={setCrashTypeOption}
+          /> */}
+          <CrashSeverity
+            selectedOption={crashSeverityOption}
+            handleOptionClick={(option: string) =>
+              setCrashSeverityOption(option as "INJURY" | "FATAL" | "ALL")
+            }
+          />
+          {/* <CrashDate
+            toDate={toDate}
+            fromDate={fromDate}
+            handleToDateChange={setToDate}
+            handleFromDateChange={setFromDate}
+          /> */}
+          <div className="italic">
+            Data updated as of: {new Date(2023, 5, 12).toLocaleDateString()}
+          </div>
+        </div>
+      </div>
       {visibleData && <Map data={visibleData} />}
     </div>
   );

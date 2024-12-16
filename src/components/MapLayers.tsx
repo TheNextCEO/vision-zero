@@ -1,4 +1,4 @@
-import mapboxgl from "mapbox-gl";
+import mapboxgl, { GeoJSONSource } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useRef, useState } from "react";
 
@@ -113,6 +113,14 @@ const Map = (props: any) => {
     // return () => {
     //   if (mapRef.current) mapRef.current.remove();
     // };
+  }, [props.data]);
+
+  // Listen for data prop changes and update the GeoJSON source
+  useEffect(() => {
+    if (mapRef.current && mapRef.current.getSource("crashData")) {
+      const source = mapRef.current.getSource("crashData") as GeoJSONSource;
+      source.setData(props.data);
+    }
   }, [props.data]);
 
   return (

@@ -29,17 +29,20 @@ export interface GeoJSONFeature {
     crash_year: number;
     crash_date_time: string;
     details: CrashDetail[];
+    is_fatal: boolean; // property for filtering
   };
 }
 
-export interface GeoJSON {
+export interface GeoJSONFeatureCollection {
   type: "FeatureCollection";
   features: GeoJSONFeature[];
 }
 
 // utils/csvToGeoJSON.ts (continued)
 
-export const convertToGeoJSON = (data: CrashData[]): GeoJSON => {
+export const convertToGeoJSON = (
+  data: CrashData[]
+): GeoJSONFeatureCollection => {
   // Create a map to group data by report_number
   const crashMap: Map<string, CrashData[]> = new Map();
 
@@ -60,9 +63,11 @@ export const convertToGeoJSON = (data: CrashData[]): GeoJSON => {
         non_motorist_description_code: item.non_motorist_description_code,
       }));
 
+      const is_fatal = crashItems.some((item) => item.injury_severity === 5);
+
       return {
         type: "Feature",
-        id: report_number,
+        id: report_number, // Assigning 'id' as string
         geometry: {
           type: "Point",
           coordinates: [firstItem.longitude, firstItem.latitude],
@@ -71,7 +76,8 @@ export const convertToGeoJSON = (data: CrashData[]): GeoJSON => {
           report_number: report_number,
           crash_year: firstItem.crash_year,
           crash_date_time: firstItem.crash_date_time,
-          details: details,
+          details: details, // Assigned as an array
+          is_fatal: is_fatal, // Set based on injury_severity
         },
       };
     }
