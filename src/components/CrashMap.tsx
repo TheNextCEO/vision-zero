@@ -1,162 +1,180 @@
 "use client";
 
-import { csv, scaleOrdinal, DSVParsedArray } from "d3";
+import {
+  convertToGeoJSON,
+  CrashData,
+  GeoJSONFeatureCollection,
+} from "@/utils/csvToGeoJSON";
+import Papa from "papaparse";
 import { useEffect, useState } from "react";
-import CrashDate from "./CrashDate";
 import CrashSeverity from "./CrashSeverity";
 import CrashType from "./CrashType";
 import Map from "./Map";
-import { startOfDay, endOfDay } from "date-fns";
+import CrashDate from "./CrashDate";
+import { endOfDay, startOfDay } from "date-fns";
 
 const CrashMap = () => {
-  const [typeOption, setTypeOption] = useState("ALL");
-  const [severityOption, setSeverityOption] = useState("CRASH");
-  const [fromDate, setFromDate] = useState<Date>(new Date(2019, 3)); // June 1, 2019
-  const [toDate, setToDate] = useState<Date>(new Date(2019, 5, 30));
   const [visibleData, setVisibleData] = useState<any>(null);
+  const [crashTypeOption, setCrashTypeOption] = useState<
+    "ALL" | "MOTOR VEHICLE" | "PEDESTRIAN" | "BICYCLIST"
+  >("ALL");
+  const [crashSeverityOption, setCrashSeverityOption] = useState<
+    "ALL" | "FATAL" | "INJURY"
+  >("ALL");
+  const [crashFromDate, setCrashFromDate] = useState<Date>(new Date(2019, 3)); // June 1, 2019
+  const [crashToDate, setCrashToDate] = useState<Date>(new Date(2019, 5, 30));
 
-  const crashData = useLeonCountyCrashData();
+  const crashData = getLeonCountyCrashData();
 
   useEffect(() => {
+    // Flatten the data into GeoJSON
     if (crashData) {
-      const severityData = filterDataBySeverity(
-        filterDataByType(crashData, typeOption),
-        severityOption
-      );
-
-      setVisibleData(filterDataByDate(severityData, fromDate, toDate));
+      const geojson = convertToGeoJSON(crashData);
+      setVisibleData(geojson);
     }
-  }, [crashData, typeOption, severityOption, fromDate, toDate]);
+  }, [crashData]);
+
+  // Update the map source data based on the filter
+  useEffect(() => {
+    if (crashData) {
+      const geojson = convertToGeoJSON(crashData);
+      let filteredFeatures = geojson.features;
+
+      if (crashSeverityOption === "FATAL") {
+        filteredFeatures = geojson.features.filter(
+          (feature) => feature.properties.is_fatal
+        );
+      } else if (crashSeverityOption === "INJURY") {
+        filteredFeatures = geojson.features.filter(
+          (feature) => !feature.properties.is_fatal
+        );
+      }
+
+      // Filter by Crash Type
+      if (crashTypeOption !== "ALL") {
+        filteredFeatures = filteredFeatures.filter((feature) =>
+          feature.properties.crash_types.includes(crashTypeOption)
+        );
+      }
+
+      // Filter by Date Range
+      if (crashFromDate || crashToDate) {
+        const start = crashFromDate
+          ? startOfDay(crashFromDate)
+          : new Date(-8640000000000000); // Minimum Date
+        const end = crashToDate
+          ? endOfDay(crashToDate)
+          : new Date(8640000000000000); // Maximum Date
+
+        filteredFeatures = filteredFeatures.filter((feature) => {
+          const crashDate = new Date(feature.properties.crash_date_time);
+          return crashDate >= start && crashDate <= end;
+        });
+      }
+
+      const filteredGeoJSON: GeoJSONFeatureCollection = {
+        type: "FeatureCollection",
+        features: filteredFeatures,
+      };
+
+      setVisibleData(filteredGeoJSON);
+    }
+  }, [
+    crashSeverityOption,
+    crashTypeOption,
+    crashData,
+    crashFromDate,
+    crashToDate,
+  ]);
 
   if (!crashData) {
     return <pre>Loading...</pre>;
   }
 
-  const colorValue = (d: any) => d.non_motorist_description_code;
-
-  const colorScale = scaleOrdinal()
-    .domain(crashData.map(colorValue).sort())
-    .range([
-      "red",
-      "blue",
-      "yellow",
-      "green",
-      "purple",
-      "orange",
-      "pink",
-      "gray",
-      "brown",
-      "black",
-    ]);
-
   return (
     <div className="flex flex-col md:flex-row ">
       <div className="col-lg-4 py-3 px-4">
-        <div className="text-xl font-bold py-3">FILTER CRASHES</div>
-        <div className="w-full space-y-3">
+        {/* <div className="text-xl font-bold py-3">FILTER CRASHES</div> */}
+        <div className="w-full space-y-5">
           <CrashType
-            selectedOption={typeOption}
-            handleOptionClick={setTypeOption}
+            selectedOption={crashTypeOption}
+            handleOptionClick={(option: string) =>
+              setCrashTypeOption(
+                option as "ALL" | "MOTOR VEHICLE" | "PEDESTRIAN" | "BICYCLIST"
+              )
+            }
           />
           <CrashSeverity
-            selectedOption={severityOption}
-            handleOptionClick={setSeverityOption}
+            selectedOption={crashSeverityOption}
+            handleOptionClick={(option: string) =>
+              setCrashSeverityOption(option as "INJURY" | "FATAL" | "ALL")
+            }
           />
           <CrashDate
-            toDate={toDate}
-            fromDate={fromDate}
-            handleToDateChange={setToDate}
-            handleFromDateChange={setFromDate}
+            toDate={crashToDate}
+            fromDate={crashFromDate}
+            handleToDateChange={setCrashToDate}
+            handleFromDateChange={setCrashFromDate}
           />
           <div className="italic">
             Data updated as of: {new Date(2023, 5, 12).toLocaleDateString()}
           </div>
         </div>
       </div>
-      {visibleData && (
-        <Map
-          data={visibleData}
-          colorScale={colorScale}
-          colorValue={colorValue}
-        />
-      )}
+      {visibleData && <Map data={visibleData} />}
     </div>
   );
 };
 
 export default CrashMap;
 
-const filterDataBySeverity = (data: any, severityOption: any) => {
-  if (severityOption) {
-    switch (severityOption) {
-      case "CRASH":
-        return data.filter((d: any) => d.injury_severity != 5);
-      case "FATAL":
-        return data.filter((d: any) => d.injury_severity == 5);
-      default:
-        return data;
-    }
-  }
-};
-
-const filterDataByType = (data: any, typeOption: any) => {
-  if (typeOption) {
-    switch (typeOption) {
-      case "ALL":
-        return data.filter((d: any) =>
-          [0, 1, 3].includes(d.non_motorist_description_code)
-        );
-      case "PEDESTRIAN":
-        return data.filter((d: any) => d.non_motorist_description_code === 1);
-      case "BICYCLIST":
-        return data.filter((d: any) => d.non_motorist_description_code === 3);
-      case "CAR":
-        return data.filter((d: any) => d.non_motorist_description_code === 0);
-      default:
-        return data.filter((d: any) =>
-          [0, 1, 3].includes(d.non_motorist_description_code)
-        );
-    }
-  }
-};
-
-const filterDataByDate = (data: any, fromDate: Date, toDate: Date) => {
-  const start = startOfDay(fromDate);
-  const end = endOfDay(toDate);
-
-  return data.filter((d: any) => {
-    const crashDate = new Date(d.crash_date_time);
-    return crashDate >= start && crashDate <= end;
-  });
-};
-
-const useLeonCountyCrashData = () => {
+const getLeonCountyCrashData = (): CrashData[] | null => {
   const csvURL =
     "https://raw.githubusercontent.com/Open-Data-Tallahassee/vision-zero/41-first-map/crash-data/quarterly-tranches/processed/leon-people-2019-q2.csv";
 
-  const row = (d: any) => {
-    d.crash_date_time = new Date(d.crash_date_time);
-    d.injury_severity = +d.injury_severity;
-    d.latitude = +d.latitude;
-    d.longitude = +d.longitude;
-    if (d.non_motorist_description_code === "") {
-      d.non_motorist_description_code = 0;
-    } else {
-      d.non_motorist_description_code = +d.non_motorist_description_code;
-    }
-    d.report_number = +d.report_number;
-    return d;
-  };
-
-  const [data, setData] = useState<DSVParsedArray<any> | null>(null);
+  const [data, setData] = useState<CrashData[] | null>(null);
 
   useEffect(() => {
-    csv(csvURL, row).then((parsedData) => {
-      // Slice the first 50 items
-      const limitedData = parsedData;
-      setData(limitedData);
-    });
-  }, []);
+    const fetchData = async () => {
+      try {
+        const response = await fetch(csvURL);
+        const csvText = await response.text();
+
+        Papa.parse<CrashData>(csvText, {
+          header: true,
+          dynamicTyping: false, // We'll handle type conversions manually
+          skipEmptyLines: true,
+          complete: (results) => {
+            const parsedData: CrashData[] = results.data.map((d) => ({
+              report_number: d.report_number, // Keep as string
+              crash_year: d.crash_year ? Number(d.crash_year) : 0,
+              role: d.role || "N/A",
+              injury_severity: d.injury_severity
+                ? Number(d.injury_severity)
+                : 0,
+              non_motorist_description_code: d.non_motorist_description_code
+                ? Number(d.non_motorist_description_code)
+                : 0,
+              crash_date_time: d.crash_date_time,
+              latitude: d.latitude ? Number(d.latitude) : 0,
+              longitude: d.longitude ? Number(d.longitude) : 0,
+            }));
+
+            setData(parsedData);
+          },
+          error: (error: any) => {
+            console.error("Error parsing CSV:", error);
+            setData(null);
+          },
+        });
+      } catch (error) {
+        console.error("Error fetching CSV data:", error);
+        setData(null);
+      }
+    };
+
+    fetchData();
+  }, [csvURL]);
 
   return data;
 };

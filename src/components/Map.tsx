@@ -1,119 +1,128 @@
-import mapboxgl from "mapbox-gl";
-import { select } from "d3";
+import mapboxgl, { GeoJSONSource } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useRef, useState } from "react";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_REACT_APP_MAPBOX_TOKEN || "";
 
-const Map = ({ data, colorScale, colorValue }: any) => {
+const Map = (props: any) => {
   const mapWidthOffset = 180;
   const mapContainer = useRef(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [lng, setLng] = useState(-84.2875);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
   const [lat, setLat] = useState(30.4543);
-  const [zoom, setZoom] = useState(11.53);
+  const [lng, setLng] = useState(-84.2875);
+  const [initZoom, setInitZoom] = useState(11.53);
 
-  const project = (d: any) => {
-    if (!map.current) throw new Error("Map is not initialized");
-    return map.current.project(new mapboxgl.LngLat(d.longitude, d.latitude));
-  };
+  // const lat = 30.4543;
+  // const lng = -84.2875;
+  // const initZoom = 11.53;
 
   useEffect(() => {
-    if (map.current) return; // initialize map only once
-    map.current = new mapboxgl.Map({
+    if (mapRef.current) return; // initialize map only once
+    mapRef.current = new mapboxgl.Map({
       container: mapContainer.current || "",
-      style: "mapbox://styles/mapbox/streets-v9",
+      style: "mapbox://styles/mapbox/light-v11",
       center: [lng, lat],
-      zoom: zoom,
-    });
-  });
-
-  useEffect(() => {
-    if (!map.current) return; // wait for map to initialize
-    map.current.on("move", () => {
-      setLng(parseFloat(map.current!.getCenter().lng.toFixed(4)));
-      setLat(parseFloat(map.current!.getCenter().lat.toFixed(4)));
-      setZoom(parseFloat(map.current!.getZoom().toFixed(2)));
+      zoom: initZoom,
     });
 
-    if (!data) {
-      return;
-    }
+    // Add navigation controls
+    mapRef.current.addControl(new mapboxgl.NavigationControl());
 
-    select(map.current.getCanvasContainer()).selectAll("svg").remove();
+    mapRef.current.on("load", () => {
+      if (mapRef.current) {
+        // Add GeoJSON source
+        mapRef.current.addSource("crashData", {
+          type: "geojson",
+          data: props.data,
+        });
 
-    const svg = select(map.current.getCanvasContainer())
-      .append("svg")
-      .attr("width", "100%")
-      .attr("height", "100%")
-      .style("position", "absolute")
-      .style("pointer-events", "none");
+        mapRef.current.addLayer({
+          id: "crashPoints",
+          type: "circle",
+          source: "crashData",
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "#FF0000",
+            "circle-opacity": 0.6,
+          },
+        });
 
-    map.current.on("load", () => {
-      const dots = svg
-        .selectAll("circle")
-        .data(data)
-        .enter()
-        .append("circle")
-        .attr("r", 4)
-        .style("fill", (d: any) => colorScale(colorValue(d)))
-        .style("opacity", 0.7);
+        // Add popups on click for crash points
+        mapRef.current.on("click", "crashPoints", (e) => {
+          const features = mapRef.current?.queryRenderedFeatures(e.point, {
+            layers: ["crashPoints"],
+          });
+          const feature = features && features[0];
+          if (feature) {
+            const coordinates = (feature.geometry as any).coordinates.slice();
+            const { report_number, crash_year, crash_date_time, details } =
+              feature.properties as {
+                report_number: string;
+                crash_year: string;
+                crash_date_time: string;
+                details: string;
+              };
 
-      const render = () => {
-        dots.attr("cx", (d) => project(d).x).attr("cy", (d) => project(d).y);
-      };
+            // Create HTML content for the popup
+            let popupContent = `
+                        <strong>Report Number:</strong> ${report_number}<br/>
+                        <strong>Year:</strong> ${crash_year}<br/>
+                        <strong>Date & Time:</strong> ${crash_date_time}<br/>
+                        <strong>Details:</strong><ul>
+                      `;
 
-      if (map.current) {
-        map.current.on("viewreset", render);
-        map.current.on("move", render);
-        map.current.on("moveend", render);
+            JSON.parse(details).forEach((loc: any) => {
+              popupContent += `
+                          <li>
+                            <strong>Role:</strong> ${loc.role}<br/>
+                            <strong>Injury Severity:</strong> ${
+                              loc.injury_severity
+                            }<br/>
+                            <strong>Non-Motorist Description Code:</strong> ${
+                              loc.non_motorist_description_code || "N/A"
+                            }
+                          </li>
+                        `;
+            });
+
+            popupContent += `</ul>`;
+
+            new mapboxgl.Popup()
+              .setLngLat(coordinates)
+              .setHTML(popupContent)
+              .addTo(mapRef.current!);
+          }
+        });
+
+        // Change the cursor to a pointer when over the points
+        mapRef.current.on("mouseenter", "crashPoints", () => {
+          mapRef.current?.getCanvas().style.setProperty("cursor", "pointer");
+        });
+
+        mapRef.current.on("mouseleave", "crashPoints", () => {
+          mapRef.current?.getCanvas().style.setProperty("cursor", "");
+        });
       }
-      render();
-
-      return () => {
-        if (map.current) {
-          map.current.remove();
-        }
-      };
     });
-  }, []);
 
-  // update dots on the map
+    // Cleanup on unmount
+    // return () => {
+    //   if (mapRef.current) mapRef.current.remove();
+    // };
+  }, [props.data]);
+
+  // Listen for data prop changes and update the GeoJSON source
   useEffect(() => {
-    if (!map.current || !data) return; // wait for map to initialize
-    const oldSvg = select(map.current.getCanvasContainer()).select("svg");
-    oldSvg.remove();
-
-    const svg = select(map.current.getCanvasContainer())
-      .append("svg")
-      .attr("width", "100%")
-      .attr("height", "100%")
-      .style("position", "absolute")
-      .style("pointer-events", "none");
-
-    const dots = svg
-      .selectAll("circle")
-      .data(data)
-      .enter()
-      .append("circle")
-      .attr("r", 4)
-      .style("fill", (d: any) => colorScale(colorValue(d)))
-      .style("opacity", 0.7);
-
-    // render correct position
-    const render = () => {
-      dots.attr("cx", (d) => project(d).x).attr("cy", (d) => project(d).y);
-    };
-    map.current.on("viewreset", render);
-    map.current.on("move", render);
-    map.current.on("moveend", render);
-    render();
-  }, [data]);
+    if (mapRef.current && mapRef.current.getSource("crashData")) {
+      const source = mapRef.current.getSource("crashData") as GeoJSONSource;
+      source.setData(props.data);
+    }
+  }, [props.data]);
 
   return (
     <div className="w-full h-full">
       <div className="bg-[rgba(35, 55, 75, 0.9)]">
-        Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+        Longitude: {lng} | Latitude: {lat} | Zoom: {initZoom}
       </div>
       <div
         ref={mapContainer}
@@ -122,6 +131,72 @@ const Map = ({ data, colorScale, colorValue }: any) => {
       />
     </div>
   );
+};
+
+// Helper function to add cluster layers
+const addClusterLayers = (map: mapboxgl.Map | null) => {
+  if (!map) return; // Ensure map is not null before proceeding
+
+  // Add cluster circles
+  map.addLayer({
+    id: "clusters",
+    type: "circle",
+    source: "crashData",
+    filter: ["has", "point_count"],
+    paint: {
+      "circle-color": [
+        "step",
+        ["get", "point_count"],
+        "#51bbd6",
+        100,
+        "#f1f075",
+        750,
+        "#f28cb1",
+      ],
+      "circle-radius": ["step", ["get", "point_count"], 20, 100, 30, 750, 40],
+    },
+  });
+
+  // Add cluster count labels
+  map.addLayer({
+    id: "cluster-count",
+    type: "symbol",
+    source: "crashData",
+    filter: ["has", "point_count"],
+    layout: {
+      "text-field": "{point_count_abbreviated}",
+      "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+      "text-size": 12,
+    },
+  });
+
+  // Add click event for clusters
+  map.on("click", "clusters", (e) => {
+    const features = map.queryRenderedFeatures(e.point, {
+      layers: ["clusters"],
+    });
+    const clusterId = features[0].properties?.cluster_id;
+    const source = map.getSource("crashData") as mapboxgl.GeoJSONSource;
+
+    if (clusterId) {
+      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+        if (err) return;
+
+        map.easeTo({
+          center: (features[0].geometry as any).coordinates,
+          zoom: zoom || 0,
+        });
+      });
+    }
+  });
+
+  // Change the cursor to a pointer when over clusters
+  map.on("mouseenter", "clusters", () => {
+    map.getCanvas().style.setProperty("cursor", "pointer");
+  });
+  map.on("mouseleave", "clusters", () => {
+    map.getCanvas().style.setProperty("cursor", "");
+  });
 };
 
 export default Map;
