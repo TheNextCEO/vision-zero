@@ -54,7 +54,7 @@ export const convertToGeoJSON = (data: CrashData[]): GeoJSON => {
   const features: GeoJSONFeature[] = Array.from(crashMap.entries()).map(
     ([report_number, crashItems]) => {
       const firstItem = crashItems[0]; // Assuming crash_year and crash_date_time are same for all items
-      const details: any[] = crashItems.map((item) => ({
+      const details: CrashDetail[] = crashItems.map((item) => ({
         role: item.role,
         injury_severity: item.injury_severity,
         non_motorist_description_code: item.non_motorist_description_code,

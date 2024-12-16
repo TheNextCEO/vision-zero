@@ -1,21 +1,10 @@
 "use client";
-// Define a CrashData interface to represent each row of the CSV
-interface CrashData {
-  report_number: string; // Keep as string to maintain uniqueness and prevent issues
-  crash_year: number;
-  role: string;
-  injury_severity: number;
-  non_motorist_description_code: number;
-  crash_date_time: Date;
-  latitude: number;
-  longitude: number;
-}
 
 import { useEffect, useState } from "react";
 import Papa from "papaparse";
 
 import Map from "./MapLayers";
-import { convertToGeoJSON } from "@/utils/csvToGeoJSON";
+import { convertToGeoJSON, CrashData } from "@/utils/csvToGeoJSON";
 
 const CrashMap = () => {
   const [visibleData, setVisibleData] = useState<any>(null);
@@ -71,9 +60,7 @@ const getLeonCountyCrashData = (): CrashData[] | null => {
               non_motorist_description_code: d.non_motorist_description_code
                 ? Number(d.non_motorist_description_code)
                 : 0,
-              crash_date_time: d.crash_date_time
-                ? new Date(d.crash_date_time)
-                : new Date(),
+              crash_date_time: d.crash_date_time,
               latitude: d.latitude ? Number(d.latitude) : 0,
               longitude: d.longitude ? Number(d.longitude) : 0,
             }));
