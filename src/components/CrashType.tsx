@@ -5,46 +5,47 @@ interface CrashTypeProps {
 
 import { Button } from "@/components/ui/button";
 
-const CrashType = ({ selectedOption, handleOptionClick }: any) => {
+const CrashType = (props: CrashTypeProps) => {
   return (
     <div className="flex flex-wrap gap-1">
       <Button
-        className={`flex-grow px-4 py-2 ${
-          selectedOption === "CAR"
+        className={`flex text-xs px-3 py-1 rounded-none h-7 ${
+          props.selectedOption === "MOTOR VEHICLE"
             ? "bg-blue-500 text-white"
             : "bg-white text-black hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => handleOptionClick("CAR")}
+        onClick={() => props.handleOptionClick("MOTOR VEHICLE")}
       >
-        CAR
+        Motor Vehicle
       </Button>
       <Button
-        className={`flex-grow px-4 py-2 ${
-          selectedOption === "PEDESTRIAN"
+        className={`flex text-xs px-3 py-1 rounded-none h-7 ${
+          props.selectedOption === "PEDESTRIAN"
             ? "bg-blue-500 text-white"
             : "bg-white text-black hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => handleOptionClick("PEDESTRIAN")}
+        onClick={() => props.handleOptionClick("PEDESTRIAN")}
       >
-        PEDESTRIANS
+        Pedestrian
       </Button>
       <Button
-        className={`flex-grow px-4 py-2 ${
-          selectedOption === "BICYCLIST"
+        className={`flex text-xs px-3 py-1 rounded-none h-7 ${
+          props.selectedOption === "BICYCLIST"
             ? "bg-blue-500 text-white"
             : "bg-white text-black hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => handleOptionClick("BICYCLIST")}
+        onClick={() => props.handleOptionClick("BICYCLIST")}
       >
-        BIKE
+        Bicyclist
       </Button>
       <Button
-        className={`flex-grow px-4 py-2 rounded-r ${
-          selectedOption === "ALL"
+        size="default"
+        className={`flex text-xs px-3 py-1 rounded-none h-7 ${
+          props.selectedOption === "ALL"
             ? "bg-blue-500 text-white"
             : "bg-white text-black hover:bg-blue-500 hover:text-white"
         }`}
-        onClick={() => handleOptionClick("ALL")}
+        onClick={() => props.handleOptionClick("ALL")}
       >
         ALL
       </Button>

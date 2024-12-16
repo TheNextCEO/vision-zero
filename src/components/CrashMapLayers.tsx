@@ -8,10 +8,14 @@ import {
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
 import CrashSeverity from "./CrashSeverity";
+import CrashType from "./CrashType";
 import Map from "./MapLayers";
 
 const CrashMap = () => {
   const [visibleData, setVisibleData] = useState<any>(null);
+  const [crashTypeOption, setCrashTypeOption] = useState<
+    "ALL" | "MOTOR VEHICLE" | "PEDESTRIAN" | "BICYCLIST"
+  >("ALL");
   const [crashSeverityOption, setCrashSeverityOption] = useState<
     "ALL" | "FATAL" | "INJURY"
   >("ALL");
@@ -43,6 +47,13 @@ const CrashMap = () => {
         );
       }
 
+      // Filter by Crash Type
+      if (crashTypeOption !== "ALL") {
+        filteredFeatures = filteredFeatures.filter((feature) =>
+          feature.properties.crash_types.includes(crashTypeOption)
+        );
+      }
+
       const filteredGeoJSON: GeoJSONFeatureCollection = {
         type: "FeatureCollection",
         features: filteredFeatures,
@@ -50,7 +61,7 @@ const CrashMap = () => {
 
       setVisibleData(filteredGeoJSON);
     }
-  }, [crashSeverityOption, crashData]);
+  }, [crashSeverityOption, crashTypeOption, crashData]);
 
   if (!crashData) {
     return <pre>Loading...</pre>;
@@ -60,11 +71,15 @@ const CrashMap = () => {
     <div className="flex flex-col md:flex-row ">
       <div className="col-lg-4 py-3 px-4">
         {/* <div className="text-xl font-bold py-3">FILTER CRASHES</div> */}
-        <div className="w-full space-y-3">
-          {/* <CrashType
+        <div className="w-full space-y-5">
+          <CrashType
             selectedOption={crashTypeOption}
-            handleOptionClick={setCrashTypeOption}
-          /> */}
+            handleOptionClick={(option: string) =>
+              setCrashTypeOption(
+                option as "ALL" | "MOTOR VEHICLE" | "PEDESTRIAN" | "BICYCLIST"
+              )
+            }
+          />
           <CrashSeverity
             selectedOption={crashSeverityOption}
             handleOptionClick={(option: string) =>
