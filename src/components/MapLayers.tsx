@@ -64,31 +64,20 @@ const Map = (props: any) => {
                 report_number: string;
                 crash_year: string;
                 crash_date_time: string;
-                details: Array<{
-                  role: string;
-                  injury_severity: string;
-                  non_motorist_description_code?: string;
-                }>;
+                details: string;
               };
-            // Ensure 'locations' is an array
-            if (!Array.isArray(details)) {
-              console.error(
-                "Expected details to be an array:",
-                details,
-                feature
-              );
-              return;
-            }
 
             // Create HTML content for the popup
             let popupContent = `
               <strong>Report Number:</strong> ${report_number}<br/>
               <strong>Year:</strong> ${crash_year}<br/>
-              <strong>Date & Time:</strong> ${crash_date_time}<br/>
+              <strong>Date & Time:</strong> ${new Date(
+                crash_date_time
+              ).toLocaleString()}<br/>
               <strong>Details:</strong><ul>
             `;
 
-            details.forEach((loc: any) => {
+            JSON.parse(details).forEach((loc: any) => {
               popupContent += `
                 <li>
                   <strong>Role:</strong> ${loc.role}<br/>
