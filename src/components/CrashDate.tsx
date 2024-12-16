@@ -1,4 +1,4 @@
-interface CrashDateProps {
+interface CrashDateFilterProps {
   toDate: Date;
   fromDate: Date;
   handleToDateChange: (date: Date) => void;
@@ -11,11 +11,11 @@ import { CalendarIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-const CrashDate = (props: CrashDateProps) => {
+const CrashDate = (props: CrashDateFilterProps) => {
   return (
     <div className="flex flex-col">
-      <label htmlFor="from_date" className="font-bold mt-2">
-        FROM DATE:
+      <label htmlFor="from_date" className="text-sm">
+        Start Date:
       </label>
       {/* <input
         type="date"
@@ -53,8 +53,8 @@ const CrashDate = (props: CrashDateProps) => {
         </PopoverContent>
       </Popover>
 
-      <label htmlFor="to_date" className="font-bold mt-2">
-        TO DATE:
+      <label htmlFor="to_date" className="text-sm mt-2">
+        End Date:
       </label>
       {/* <input
         type="date"

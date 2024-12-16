@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import CrashSeverity from "./CrashSeverity";
 import CrashType from "./CrashType";
 import Map from "./MapLayers";
+import CrashDate from "./CrashDate";
+import { endOfDay, startOfDay } from "date-fns";
 
 const CrashMap = () => {
   const [visibleData, setVisibleData] = useState<any>(null);
@@ -19,6 +21,8 @@ const CrashMap = () => {
   const [crashSeverityOption, setCrashSeverityOption] = useState<
     "ALL" | "FATAL" | "INJURY"
   >("ALL");
+  const [crashFromDate, setCrashFromDate] = useState<Date>(new Date(2019, 3)); // June 1, 2019
+  const [crashToDate, setCrashToDate] = useState<Date>(new Date(2019, 5, 30));
 
   const crashData = getLeonCountyCrashData();
 
@@ -54,6 +58,21 @@ const CrashMap = () => {
         );
       }
 
+      // Filter by Date Range
+      if (crashFromDate || crashToDate) {
+        const start = crashFromDate
+          ? startOfDay(crashFromDate)
+          : new Date(-8640000000000000); // Minimum Date
+        const end = crashToDate
+          ? endOfDay(crashToDate)
+          : new Date(8640000000000000); // Maximum Date
+
+        filteredFeatures = filteredFeatures.filter((feature) => {
+          const crashDate = new Date(feature.properties.crash_date_time);
+          return crashDate >= start && crashDate <= end;
+        });
+      }
+
       const filteredGeoJSON: GeoJSONFeatureCollection = {
         type: "FeatureCollection",
         features: filteredFeatures,
@@ -61,7 +80,13 @@ const CrashMap = () => {
 
       setVisibleData(filteredGeoJSON);
     }
-  }, [crashSeverityOption, crashTypeOption, crashData]);
+  }, [
+    crashSeverityOption,
+    crashTypeOption,
+    crashData,
+    crashFromDate,
+    crashToDate,
+  ]);
 
   if (!crashData) {
     return <pre>Loading...</pre>;
@@ -86,12 +111,12 @@ const CrashMap = () => {
               setCrashSeverityOption(option as "INJURY" | "FATAL" | "ALL")
             }
           />
-          {/* <CrashDate
-            toDate={toDate}
-            fromDate={fromDate}
-            handleToDateChange={setToDate}
-            handleFromDateChange={setFromDate}
-          /> */}
+          <CrashDate
+            toDate={crashToDate}
+            fromDate={crashFromDate}
+            handleToDateChange={setCrashToDate}
+            handleFromDateChange={setCrashFromDate}
+          />
           <div className="italic">
             Data updated as of: {new Date(2023, 5, 12).toLocaleDateString()}
           </div>

@@ -8,9 +8,13 @@ const Map = (props: any) => {
   const mapWidthOffset = 180;
   const mapContainer = useRef(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const [lng, setLng] = useState(-84.2875);
   const [lat, setLat] = useState(30.4543);
+  const [lng, setLng] = useState(-84.2875);
   const [initZoom, setInitZoom] = useState(11.53);
+
+  // const lat = 30.4543;
+  // const lng = -84.2875;
+  // const initZoom = 11.53;
 
   useEffect(() => {
     if (mapRef.current) return; // initialize map only once
