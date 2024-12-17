@@ -5,14 +5,13 @@ import {
   CrashData,
   GeoJSONFeatureCollection,
 } from "@/utils/csvToGeoJSON";
-import Papa from "papaparse";
+import { getLeonCountyCrashData } from "@/utils/fetchCrashData";
+import { endOfDay, startOfDay } from "date-fns";
 import { useEffect, useState } from "react";
+import CrashDate from "./CrashDate";
 import CrashSeverity from "./CrashSeverity";
 import CrashType from "./CrashType";
 import Map from "./Map";
-import CrashDate from "./CrashDate";
-import { endOfDay, startOfDay } from "date-fns";
-import { getLeonCountyCrashData } from "@/utils/fetchCrashData";
 
 const CrashMap = () => {
   const [visibleData, setVisibleData] =

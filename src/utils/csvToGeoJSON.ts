@@ -77,7 +77,8 @@ export const convertToGeoJSON = (
         new Set(
           crashItems
             .map(
-              (item: any) => crashTypeMap[item.non_motorist_description_code]
+              (item: CrashData) =>
+                crashTypeMap[item.non_motorist_description_code]
             )
             .filter((type) => type !== undefined)
         )

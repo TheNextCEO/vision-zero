@@ -1,11 +1,15 @@
+interface MapProps {
+  data: GeoJSONFeatureCollection;
+}
+
+import { GeoJSONFeatureCollection } from "@/utils/csvToGeoJSON";
 import mapboxgl, { GeoJSONSource } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useRef, useState } from "react";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_REACT_APP_MAPBOX_TOKEN || "";
 
-const Map = (props: any) => {
-  const mapWidthOffset = 180;
+const Map = (props: MapProps) => {
   const mapContainer = useRef(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [lat, setLat] = useState(30.4543);
@@ -110,7 +114,7 @@ const Map = (props: any) => {
     // return () => {
     //   if (mapRef.current) mapRef.current.remove();
     // };
-  }, [props.data]);
+  }, [props.data, setLng, setLat, initZoom]);
 
   // Listen for data prop changes and update the GeoJSON source
   useEffect(() => {
@@ -132,72 +136,6 @@ const Map = (props: any) => {
       />
     </div>
   );
-};
-
-// Helper function to add cluster layers
-const addClusterLayers = (map: mapboxgl.Map | null) => {
-  if (!map) return; // Ensure map is not null before proceeding
-
-  // Add cluster circles
-  map.addLayer({
-    id: "clusters",
-    type: "circle",
-    source: "crashData",
-    filter: ["has", "point_count"],
-    paint: {
-      "circle-color": [
-        "step",
-        ["get", "point_count"],
-        "#51bbd6",
-        100,
-        "#f1f075",
-        750,
-        "#f28cb1",
-      ],
-      "circle-radius": ["step", ["get", "point_count"], 20, 100, 30, 750, 40],
-    },
-  });
-
-  // Add cluster count labels
-  map.addLayer({
-    id: "cluster-count",
-    type: "symbol",
-    source: "crashData",
-    filter: ["has", "point_count"],
-    layout: {
-      "text-field": "{point_count_abbreviated}",
-      "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-      "text-size": 12,
-    },
-  });
-
-  // Add click event for clusters
-  map.on("click", "clusters", (e) => {
-    const features = map.queryRenderedFeatures(e.point, {
-      layers: ["clusters"],
-    });
-    const clusterId = features[0].properties?.cluster_id;
-    const source = map.getSource("crashData") as mapboxgl.GeoJSONSource;
-
-    if (clusterId) {
-      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-        if (err) return;
-
-        map.easeTo({
-          center: (features[0].geometry as any).coordinates,
-          zoom: zoom || 0,
-        });
-      });
-    }
-  });
-
-  // Change the cursor to a pointer when over clusters
-  map.on("mouseenter", "clusters", () => {
-    map.getCanvas().style.setProperty("cursor", "pointer");
-  });
-  map.on("mouseleave", "clusters", () => {
-    map.getCanvas().style.setProperty("cursor", "");
-  });
 };
 
 export default Map;

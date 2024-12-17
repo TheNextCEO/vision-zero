@@ -18,7 +18,7 @@ export const getLeonCountyCrashData = async (): Promise<CrashData[] | null> => {
     }
     const csvText = await response.text();
 
-    return new Promise<CrashData[] | null>((resolve, reject) => {
+    return new Promise<CrashData[] | null>((resolve) => {
       Papa.parse<CrashData>(csvText, {
         header: true,
         dynamicTyping: false, // We'll handle type conversions manually
@@ -49,7 +49,7 @@ export const getLeonCountyCrashData = async (): Promise<CrashData[] | null> => {
             resolve(null);
           }
         },
-        error: (error: any) => {
+        error: (error: Error) => {
           console.error("Error parsing CSV:", error);
           resolve(null);
         },
