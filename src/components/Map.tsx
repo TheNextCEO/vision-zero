@@ -20,8 +20,9 @@ const Map = (props: any) => {
     if (mapRef.current) return; // initialize map only once
     mapRef.current = new mapboxgl.Map({
       container: mapContainer.current || "",
-      style: "mapbox://styles/mapbox/light-v11",
+      style: "mapbox://styles/benji-develops/cm4rnea8l00cm01r07kbv2iwa",
       center: [lng, lat],
+      minZoom: 10,
       zoom: initZoom,
     });
 
