@@ -12,13 +12,10 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_REACT_APP_MAPBOX_TOKEN || "";
 const Map = (props: MapProps) => {
   const mapContainer = useRef(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const [lat, setLat] = useState(30.4543);
-  const [lng, setLng] = useState(-84.2875);
-  const [initZoom, setInitZoom] = useState(11.53);
 
-  // const lat = 30.4543;
-  // const lng = -84.2875;
-  // const initZoom = 11.53;
+  const lat = 30.4543;
+  const lng = -84.2875;
+  const initZoom = 11.53;
 
   useEffect(() => {
     if (mapRef.current) return; // initialize map only once
@@ -114,7 +111,7 @@ const Map = (props: MapProps) => {
     // return () => {
     //   if (mapRef.current) mapRef.current.remove();
     // };
-  }, [props.data, setLng, setLat, initZoom]);
+  }, [props.data]);
 
   // Listen for data prop changes and update the GeoJSON source
   useEffect(() => {
@@ -126,9 +123,9 @@ const Map = (props: MapProps) => {
 
   return (
     <div className="w-full h-full">
-      <div className="bg-[rgba(35, 55, 75, 0.9)]">
+      {/* <div className="bg-[rgba(35, 55, 75, 0.9)]">
         Longitude: {lng} | Latitude: {lat} | Zoom: {initZoom}
-      </div>
+      </div> */}
       <div
         ref={mapContainer}
         className="map-container h-[calc(100vh_-_140px)] w-full relative"
