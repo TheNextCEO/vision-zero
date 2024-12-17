@@ -5,7 +5,7 @@ interface MapProps {
 import { GeoJSONFeatureCollection } from "@/utils/csvToGeoJSON";
 import mapboxgl, { GeoJSONSource } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_REACT_APP_MAPBOX_TOKEN || "";
 
